@@ -7,7 +7,8 @@ import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebase
 const firebaseConfig = {
     apiKey: "AIzaSyC6-ls0OT4aYCetC8v1dYR1VzBqXwQXEig",
     authDomain: "yjhgfds-e7260.firebaseapp.com",
-    databaseURL: "https://yjhgfds-e7260-default-rtdb.firebaseio.com", // تم إضافة الرابط هنا ليتم الحفظ
+    // تم تحديث الرابط هنا للرابط الجديد الذي أرسلته
+    databaseURL: "https://ghjkl-bc739-default-rtdb.firebaseio.com",
     projectId: "yjhgfds-e7260",
     storageBucket: "yjhgfds-e7260.firebasestorage.app",
     messagingSenderId: "699051664281",
