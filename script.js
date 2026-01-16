@@ -1,3 +1,7 @@
+{
+type: uploaded file
+fileName: --main.zip/--main/script.js
+fullContent:
 // ==========================================
 // اتصال Firebase (السحابي)
 // ==========================================
@@ -46,19 +50,27 @@ function initApp() {
     if (linkedId) {
         // --- مسار الزبون ---
         targetCustomerId = parseInt(linkedId);
+        
+        // محاولة البحث محلياً أولاً
         const customer = db.customers.find(c => c.id === targetCustomerId);
         
         if (customer) {
             document.getElementById('client-welcome-name').innerText = customer.name;
             showScreen('screen-client-login');
+            // إخفاء شاشة التحميل إذا وجدت
+            const splash = document.getElementById('splash-screen');
+            if(splash) splash.style.display = 'none';
         } else {
-            alert('عذراً، الرابط غير صالح أو تم حذف الحساب.');
-            window.history.replaceState({}, document.title, window.location.pathname);
-            showScreen('screen-admin-login');
+            // تصحيح الخطأ: لا نحول للأدمن فوراً، بل ننتظر تحميل البيانات من Firebase
+            // نظهر شاشة التحميل فقط
+            const splash = document.getElementById('splash-screen');
+            if(splash) splash.style.display = 'flex';
         }
     } else {
         // --- مسار الأدمن ---
         showScreen('screen-admin-login');
+        const splash = document.getElementById('splash-screen');
+        if(splash) splash.style.display = 'none';
     }
 }
 
@@ -71,9 +83,26 @@ function setupFirebaseSync() {
             // حفظ نسخة محلية محدثة
             localStorage.setItem('noorHusseinDB', JSON.stringify(db));
             
-            // تحديث الواجهة إذا كنا نعمل حالياً
+            // تصحيح الخطأ: التحقق من الرابط مرة أخرى بعد وصول البيانات
+            if (targetCustomerId) {
+                const customer = db.customers.find(c => c.id === targetCustomerId);
+                if (customer) {
+                    document.getElementById('client-welcome-name').innerText = customer.name;
+                    showScreen('screen-client-login');
+                    const splash = document.getElementById('splash-screen');
+                    if(splash) splash.style.display = 'none';
+                } else {
+                    // الآن فقط نتأكد أن الحساب غير موجود فعلاً
+                    alert('عذراً، الرابط غير صالح أو تم حذف الحساب.');
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    showScreen('screen-admin-login');
+                    const splash = document.getElementById('splash-screen');
+                    if(splash) splash.style.display = 'none';
+                }
+            }
+
+            // تحديث الواجهة إذا كنا نعمل حالياً كأدمن
             if (activeCustomer) {
-                // تحديث بيانات الزبون المفتوح حالياً
                 const updatedCustomer = db.customers.find(c => c.id === activeCustomer.id);
                 if (updatedCustomer) {
                     activeCustomer = updatedCustomer;
@@ -127,7 +156,10 @@ function fillClientViewData(c) {
     const list = document.getElementById('cvTransList');
     list.innerHTML = '';
     
-    [...c.transactions].reverse().forEach(t => {
+    // تأكد أن المعاملات موجودة
+    const transactions = c.transactions || [];
+    
+    [...transactions].reverse().forEach(t => {
         let details = '';
         if (t.type === 'sale') {
             details = `<div style="font-size:11px; color:#666; margin-top:4px;">${t.items.map(i => i.name).join(' + ')}</div>`;
@@ -297,6 +329,11 @@ function removeFromCart(idx) { currentCart.splice(idx, 1); renderCart(); }
 
 function saveInvoice() {
     if (currentCart.length === 0) return alert('السلة فارغة!');
+    
+    // تصحيح الخطأ: التحقق من وجود المصفوفة والقيم قبل الحفظ لتجنب التعليق
+    if (!activeCustomer.transactions) activeCustomer.transactions = [];
+    if (typeof activeCustomer.totalSales !== 'number') activeCustomer.totalSales = 0;
+
     const totalAmount = currentCart.reduce((sum, i) => sum + i.total, 0);
     activeCustomer.totalSales += totalAmount;
     activeCustomer.transactions.push({
@@ -318,6 +355,11 @@ function saveInvoice() {
 function processPayment() {
     const amount = parseFloat(document.getElementById('paymentInput').value);
     if (!amount) return alert('أدخل المبلغ الواصل');
+    
+    // حماية إضافية
+    if (!activeCustomer.transactions) activeCustomer.transactions = [];
+    if (typeof activeCustomer.totalPaid !== 'number') activeCustomer.totalPaid = 0;
+
     activeCustomer.totalPaid += amount;
     activeCustomer.transactions.push({
         type: 'pay',
@@ -341,7 +383,10 @@ function refreshAdminViews() {
     
     const list = document.getElementById('transList');
     list.innerHTML = '';
-    [...activeCustomer.transactions].reverse().forEach(t => {
+    
+    const transactions = activeCustomer.transactions || [];
+
+    [...transactions].reverse().forEach(t => {
         let details = '';
         if (t.type === 'sale') {
             details = `<div style="font-size:11px; color:#666;">${t.items.map(i => i.name).join(' + ')}</div>`;
@@ -394,3 +439,5 @@ window.addItemToCart = addItemToCart;
 window.removeFromCart = removeFromCart;
 window.saveInvoice = saveInvoice;
 window.processPayment = processPayment;
+
+}
