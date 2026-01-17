@@ -146,10 +146,18 @@ td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* =========================================================
-   إعدادات الطباعة (Print) - تم تعديلها لعرض التقرير
+   إعدادات الطباعة (Print) - تعديل لإخفاء الرابط وطباعة صفحة واحدة
    ========================================================= */
 @media print {
-    body { background: white; color: black; }
+    /* إخفاء هوامش المتصفح الافتراضية (يخفي الرابط والتاريخ) */
+    @page { margin: 0; size: auto; }
+
+    body { 
+        background: white; 
+        color: black; 
+        margin: 1cm; /* هامش داخلي بسيط للمحتوى */
+        -webkit-print-color-adjust: exact; 
+    }
     
     /* إخفاء كل ما لا نريده */
     .bottom-nav, 
@@ -162,39 +170,59 @@ td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
     .form-grid,
     #splash-screen,
     .btn-xs,
-    button {
+    button,
+    .search-hero, /* إخفاء البحث */
+    .section-title /* إخفاء العناوين الجانبية */
+    {
         display: none !important;
     }
 
     /* تنسيق الهيدر للطباعة */
     .app-header {
-        position: relative;
+        position: static; /* إلغاء التثبيت */
         background: white;
         color: black;
         box-shadow: none;
         border-bottom: 2px solid #000;
         height: auto;
-        padding: 20px 0;
+        padding: 10px 0;
+        margin-bottom: 20px;
     }
     .app-header div { font-size: 24px; font-weight: bold; }
+    .app-header button { display: none; } /* إخفاء زر التغيير */
 
     /* تنسيق المحتوى */
     .app-section { display: block !important; padding: 0 !important; }
     .container, .app-container { padding: 0; margin: 0; max-width: 100%; }
     
     /* جعل ألوان الصناديق مناسبة للطباعة (أبيض وأسود) */
+    .report-summary {
+        margin-bottom: 20px;
+        border: 1px solid #000;
+        border-radius: 10px;
+        padding: 10px;
+    }
     .report-summary .box {
         background: white !important;
         color: black !important;
-        border: 1px solid #000;
+        border: none;
         box-shadow: none;
+        font-weight: bold;
     }
+    .report-summary .box span { font-size: 1.4rem; }
 
     /* توسيع الجدول */
     .transactions-list {
-        margin-top: 20px;
+        margin-top: 10px;
+        border-top: 2px solid #000;
     }
     
+    /* ضمان عدم انقسام العناصر */
+    .transactions-list > div {
+        page-break-inside: avoid;
+        border-bottom: 1px solid #000 !important;
+    }
+
     /* إخفاء الشاشات الأخرى التي ليست نشطة إذا كنا نطبع من لوحة الادمن */
     #tab-customers, #tab-invoice, #tab-payment { display: none !important; }
     #tab-reports { display: block !important; }
