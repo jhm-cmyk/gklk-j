@@ -1,7 +1,3 @@
-{
-type: uploaded file
-fileName: --main.zip/--main/script.js
-fullContent:
 // ==========================================
 // اتصال Firebase (السحابي)
 // ==========================================
@@ -11,7 +7,6 @@ import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebase
 const firebaseConfig = {
     apiKey: "AIzaSyC6-ls0OT4aYCetC8v1dYR1VzBqXwQXEig",
     authDomain: "yjhgfds-e7260.firebaseapp.com",
-    // تم تحديث الرابط هنا للرابط الجديد الذي أرسلته
     databaseURL: "https://ghjkl-bc739-default-rtdb.firebaseio.com",
     projectId: "yjhgfds-e7260",
     storageBucket: "yjhgfds-e7260.firebasestorage.app",
@@ -22,24 +17,24 @@ const firebaseConfig = {
 // تهيئة الاتصال
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
-const dbRef = ref(database, 'noorHusseinDB'); // مرجع قاعدة البيانات السحابية
+const dbRef = ref(database, 'noorHusseinDB');
 
 // ==========================================
 // إعدادات النظام والثوابت
 // ==========================================
-const ADMIN_PIN = "1972";  // رمز الأدمن
-const DELETE_PIN = "121";  // رمز الحذف
+const ADMIN_PIN = "1972";
+const DELETE_PIN = "121";
 let db = JSON.parse(localStorage.getItem('noorHusseinDB')) || { customers: [] };
-let activeCustomer = null; // الزبون المحدد حالياً
-let currentCart = [];      // سلة المشتريات
-let targetCustomerId = null; // معرف الزبون للرابط
+let activeCustomer = null;
+let currentCart = [];
+let targetCustomerId = null;
 
 // ==========================================
 // نقطة البداية (Boot Sequence)
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
     initApp();
-    setupFirebaseSync(); // تشغيل المزامنة
+    setupFirebaseSync();
 });
 
 function initApp() {
@@ -48,60 +43,60 @@ function initApp() {
     const linkedId = urlParams.get('id');
 
     if (linkedId) {
-        // --- مسار الزبون ---
         targetCustomerId = parseInt(linkedId);
-        
-        // محاولة البحث محلياً أولاً
+        // التحقق المحلي السريع
         const customer = db.customers.find(c => c.id === targetCustomerId);
-        
         if (customer) {
             document.getElementById('client-welcome-name').innerText = customer.name;
             showScreen('screen-client-login');
-            // إخفاء شاشة التحميل إذا وجدت
-            const splash = document.getElementById('splash-screen');
-            if(splash) splash.style.display = 'none';
+            hideSplash();
         } else {
-            // تصحيح الخطأ: لا نحول للأدمن فوراً، بل ننتظر تحميل البيانات من Firebase
-            // نظهر شاشة التحميل فقط
+            // ننتظر التحميل من السيرفر
             const splash = document.getElementById('splash-screen');
             if(splash) splash.style.display = 'flex';
         }
     } else {
-        // --- مسار الأدمن ---
+        // مسار الأدمن
         showScreen('screen-admin-login');
-        const splash = document.getElementById('splash-screen');
-        if(splash) splash.style.display = 'none';
+        hideSplash();
     }
 }
 
-// --- مزامنة البيانات (استقبال من السيرفر) ---
+function hideSplash() {
+    const splash = document.getElementById('splash-screen');
+    if(splash) {
+        splash.style.opacity = '0';
+        setTimeout(() => splash.style.display = 'none', 500);
+    }
+}
+
+// --- مزامنة البيانات ---
 function setupFirebaseSync() {
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
             db = data;
-            // حفظ نسخة محلية محدثة
             localStorage.setItem('noorHusseinDB', JSON.stringify(db));
             
-            // تصحيح الخطأ: التحقق من الرابط مرة أخرى بعد وصول البيانات
             if (targetCustomerId) {
                 const customer = db.customers.find(c => c.id === targetCustomerId);
                 if (customer) {
                     document.getElementById('client-welcome-name').innerText = customer.name;
                     showScreen('screen-client-login');
-                    const splash = document.getElementById('splash-screen');
-                    if(splash) splash.style.display = 'none';
+                    hideSplash();
                 } else {
-                    // الآن فقط نتأكد أن الحساب غير موجود فعلاً
-                    alert('عذراً، الرابط غير صالح أو تم حذف الحساب.');
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                    showScreen('screen-admin-login');
+                    // إذا لم يتم العثور عليه حتى بعد التحديث
                     const splash = document.getElementById('splash-screen');
-                    if(splash) splash.style.display = 'none';
+                    // لا نخفي الشاشة فوراً، ننتظر قليلاً للتأكد
+                    if (splash && splash.style.display !== 'none') {
+                         setTimeout(() => {
+                             alert('الرابط غير صالح أو تم حذف الحساب.');
+                             window.location.href = window.location.pathname; // إعادة توجيه للرئيسية
+                         }, 2000);
+                    }
                 }
             }
 
-            // تحديث الواجهة إذا كنا نعمل حالياً كأدمن
             if (activeCustomer) {
                 const updatedCustomer = db.customers.find(c => c.id === activeCustomer.id);
                 if (updatedCustomer) {
@@ -118,9 +113,7 @@ function setupFirebaseSync() {
 function showScreen(screenId) {
     hideAllScreens();
     const screen = document.getElementById(screenId);
-    if(screen) {
-        screen.classList.add('active-screen');
-    }
+    if(screen) screen.classList.add('active-screen');
 }
 
 function hideAllScreens() {
@@ -148,15 +141,12 @@ function checkClientLogin() {
 function fillClientViewData(c) {
     document.getElementById('cvName').innerText = c.name;
     const debt = c.totalSales - c.totalPaid;
-    
     document.getElementById('cvSales').innerText = c.totalSales.toLocaleString();
     document.getElementById('cvPaid').innerText = c.totalPaid.toLocaleString();
     document.getElementById('cvDebt').innerText = debt.toLocaleString();
 
     const list = document.getElementById('cvTransList');
     list.innerHTML = '';
-    
-    // تأكد أن المعاملات موجودة
     const transactions = c.transactions || [];
     
     [...transactions].reverse().forEach(t => {
@@ -164,7 +154,6 @@ function fillClientViewData(c) {
         if (t.type === 'sale') {
             details = `<div style="font-size:11px; color:#666; margin-top:4px;">${t.items.map(i => i.name).join(' + ')}</div>`;
         }
-        
         list.innerHTML += `
             <div style="background:white; padding:12px; border-bottom:1px solid #eee; margin-bottom:5px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -189,13 +178,7 @@ function checkAdminLogin() {
     const pin = document.getElementById('adminPinInput').value;
     if (pin === ADMIN_PIN) {
         showScreen('screen-admin-app');
-        setTimeout(() => {
-            const splash = document.getElementById('splash-screen');
-            if(splash) {
-                splash.style.opacity = '0';
-                setTimeout(() => splash.style.display = 'none', 1000);
-            }
-        }, 1200);
+        hideSplash();
         renderCustomerList();
     } else {
         alert("الرمز السري غير صحيح");
@@ -212,7 +195,9 @@ function switchTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
+    // محاولة تفعيل الزر في النافبار
+    const navBtn = document.querySelector(`a[onclick="switchTab('${tabId}')"]`);
+    if(navBtn) navBtn.classList.add('active');
 }
 
 function printCustomerReport() {
@@ -251,7 +236,6 @@ function confirmAddCustomer() {
 
 function renderCustomerList(filterText = '') {
     calculateGlobalDebt();
-
     const list = document.getElementById('customerListContainer');
     list.innerHTML = '';
     const filtered = db.customers.filter(c => c.name.includes(filterText));
@@ -307,8 +291,10 @@ function deleteCustomer() {
 function addItemToCart() {
     const name = document.getElementById('itemName').value;
     const price = parseFloat(document.getElementById('itemPrice').value);
-    const qty = parseFloat(document.getElementById('itemQty').value);
-    if (!name || !price) return;
+    const qty = parseFloat(document.getElementById('itemQty').value) || 1;
+    
+    if (!name || !price) return alert("الرجاء إدخال المادة والسعر");
+    
     currentCart.push({ name, price, qty, total: price * qty });
     document.getElementById('itemName').value = '';
     document.getElementById('itemName').focus();
@@ -328,24 +314,30 @@ function renderCart() {
 function removeFromCart(idx) { currentCart.splice(idx, 1); renderCart(); }
 
 function saveInvoice() {
-    if (currentCart.length === 0) return alert('السلة فارغة!');
+    // إصلاح مشكلة عدم الاستجابة: التحقق من وجود الزبون
+    if (!activeCustomer) return alert("خطأ: لم يتم تحديد زبون، يرجى العودة للقائمة واختيار الزبون.");
     
-    // تصحيح الخطأ: التحقق من وجود المصفوفة والقيم قبل الحفظ لتجنب التعليق
+    if (!currentCart || currentCart.length === 0) return alert('السلة فارغة!');
+
+    // ضمان وجود المصفوفة والقيم
     if (!activeCustomer.transactions) activeCustomer.transactions = [];
     if (typeof activeCustomer.totalSales !== 'number') activeCustomer.totalSales = 0;
 
     const totalAmount = currentCart.reduce((sum, i) => sum + i.total, 0);
     activeCustomer.totalSales += totalAmount;
+    
     activeCustomer.transactions.push({
         type: 'sale',
         date: new Date().toLocaleDateString('ar-EG') + ' ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}),
         items: [...currentCart],
         amount: totalAmount
     });
+    
     saveData();
     currentCart = [];
     renderCart();
-    alert('تم الحفظ');
+    
+    alert('تم الحفظ بنجاح');
     switchTab('tab-reports');
     refreshAdminViews();
     calculateGlobalDebt();
@@ -353,10 +345,10 @@ function saveInvoice() {
 
 // --- عمليات التسديد ---
 function processPayment() {
+    if (!activeCustomer) return alert("خطأ: لم يتم تحديد زبون");
     const amount = parseFloat(document.getElementById('paymentInput').value);
     if (!amount) return alert('أدخل المبلغ الواصل');
-    
-    // حماية إضافية
+
     if (!activeCustomer.transactions) activeCustomer.transactions = [];
     if (typeof activeCustomer.totalPaid !== 'number') activeCustomer.totalPaid = 0;
 
@@ -366,6 +358,7 @@ function processPayment() {
         date: new Date().toLocaleDateString('ar-EG') + ' ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}),
         amount: amount
     });
+    
     saveData();
     document.getElementById('paymentInput').value = '';
     alert('تم التسديد');
@@ -404,15 +397,12 @@ function refreshAdminViews() {
     });
 }
 
-// --- دالة الحفظ المركزية (LocalStorage + Firebase) ---
+// --- دالة الحفظ المركزية ---
 function saveData() { 
-    // 1. حفظ في الهاتف (أوفلاين)
     localStorage.setItem('noorHusseinDB', JSON.stringify(db)); 
-    
-    // 2. إرسال إلى قاعدة البيانات السحابية (أونلاين)
     set(dbRef, db)
-        .then(() => console.log("تمت المزامنة مع السيرفر"))
-        .catch((e) => console.log("لا يوجد إنترنت، تم الحفظ محلياً فقط", e));
+        .then(() => console.log("تمت المزامنة"))
+        .catch((e) => console.log("خطأ في المزامنة، تم الحفظ محلياً", e));
 }
 
 function calculateGlobalDebt() {
@@ -422,7 +412,7 @@ function calculateGlobalDebt() {
 }
 
 // ==========================================
-// ربط الدوال بالواجهة (مهم جداً للعمل مع module)
+// ربط الدوال بالنافذة (مهم جداً)
 // ==========================================
 window.checkAdminLogin = checkAdminLogin;
 window.checkClientLogin = checkClientLogin;
@@ -439,5 +429,3 @@ window.addItemToCart = addItemToCart;
 window.removeFromCart = removeFromCart;
 window.saveInvoice = saveInvoice;
 window.processPayment = processPayment;
-
-}
