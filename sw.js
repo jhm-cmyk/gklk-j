@@ -1,5 +1,14 @@
-const CACHE_NAME = 'noor-hussein-v3';
-const ASSETS = ['/', '/index.html', '/style.css', '/script.js', '/manifest.json'];
+const CACHE_NAME = 'noor-hussein-v4-offline';
+const ASSETS = [
+    '/',
+    '/index.html',
+    '/style.css',
+    '/script.js',
+    '/manifest.json',
+    'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap',
+    'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js',
+    'https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js'
+];
 
 self.addEventListener('install', (e) => {
     e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
