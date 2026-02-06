@@ -35,6 +35,7 @@ let targetCustomerId = null;
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
     initApp();
+    renderCustomerList(); // <--- هذا التعديل: عرض البيانات المحفوظة محلياً فوراً
     setupFirebaseSync();
     
     // استرجاع السلة المحفوظة مؤقتاً
