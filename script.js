@@ -411,10 +411,13 @@ function saveInvoice() {
     currentCart = [];
     renderCart();
     
-    alert('تم الحفظ بنجاح');
+    // تم التعديل: تحديث الشاشة قبل إظهار رسالة التنبيه
     switchTab('tab-reports');
     refreshAdminViews();
     calculateGlobalDebt();
+
+    // تأخير بسيط للتنبيه لضمان تحديث الشاشة أولاً
+    setTimeout(() => alert('تم الحفظ بنجاح'), 50);
 }
 
 // --- عمليات التسديد ---
@@ -435,9 +438,13 @@ function processPayment() {
     
     saveData();
     document.getElementById('paymentInput').value = '';
-    alert('تم التسديد');
+    
+    // تم التعديل: تحديث الشاشة قبل إظهار رسالة التنبيه
     refreshAdminViews();
     calculateGlobalDebt();
+    
+    // تأخير بسيط للتنبيه لضمان تحديث الشاشة أولاً
+    setTimeout(() => alert('تم التسديد'), 50);
 }
 
 // === إدارة تعديل وحذف الحركات ===
