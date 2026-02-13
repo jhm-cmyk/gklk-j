@@ -1,4 +1,4 @@
-const CACHE_NAME = 'noor-hussein-v4-offline';
+const CACHE_NAME = 'noor-hussein-v5-offline';
 const ASSETS = [
     '/',
     '/index.html',
@@ -6,8 +6,8 @@ const ASSETS = [
     '/script.js',
     '/manifest.json',
     'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap',
-    'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js',
-    'https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js'
+    'https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js',
+    'https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js'
 ];
 
 self.addEventListener('install', (e) => {
