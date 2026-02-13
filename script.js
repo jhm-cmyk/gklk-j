@@ -1,13 +1,13 @@
 // ==========================================
 // اتصال Firebase (السحابي)
 // ==========================================
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyC6-ls0OT4aYCetC8v1dYR1VzBqXwQXEig",
     authDomain: "yjhgfds-e7260.firebaseapp.com",
-    databaseURL: "https://ghjkl-bc739-default-rtdb.firebaseio.com",
+    databaseURL: "https://yjhgfds-e7260-default-rtdb.firebaseio.com",
     projectId: "yjhgfds-e7260",
     storageBucket: "yjhgfds-e7260.firebasestorage.app",
     messagingSenderId: "699051664281",
